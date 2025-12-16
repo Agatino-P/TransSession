@@ -1,0 +1,6 @@
+@TransSession.Api_HostAddress = http://localhost:5076
+
+GET {{TransSession.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

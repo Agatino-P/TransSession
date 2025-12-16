@@ -1,0 +1,84 @@
+zipkin-server-2.12.9-exec.jar
+
+########################
+# Build / output
+########################
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]og/
+-***+**************--logs/
+*.log
+
+########################
+# Visual Studio / .NET
+########################
+.vs/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+artifacts/
+
+# MSBuild
+*.tlog
+
+########################
+# JetBrains Rider / ReSharper
+########################
+.idea/
+*.sln.iml
+
+# ReSharper
+_ReSharper.*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+########################
+# User-specific stuff
+########################
+*.userprefs
+*.rsuser
+
+########################
+# OS crap
+########################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+########################
+# Other common .NET stuff
+########################
+# Publish profiles
+*.pubxml
+*.pubxml.user
+
+# Local settings / secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Rider caches (if any appear)
+.idea/.idea.*
