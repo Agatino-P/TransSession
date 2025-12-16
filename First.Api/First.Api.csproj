@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>TransSession.First.Api</RootNamespace>
+        <RootNamespace>First.Api</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,4 +1,5 @@
 using NServiceBus.TransactionalSession;
+using Second.Contracts.NServiceBus.Commands;
 
 namespace Second.Api;
 
@@ -7,11 +8,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
-        // Add services to the container.
-
         builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
@@ -21,7 +18,6 @@ public class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -44,22 +40,29 @@ public static class NBusExtensions
         EndpointConfiguration endpointConfiguration = new EndpointConfiguration(endpointName);
         endpointConfiguration.UseSerialization<SystemJsonSerializer>();
         endpointConfiguration.EnableInstallers();
+        
         var transport = endpointConfiguration.UseTransport<RabbitMQTransport>();
         transport.ConnectionString("host=localhost;username=guest;password=guest");
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
+        
+        RoutingSettings<RabbitMQTransport> routing=transport.Routing()!;
+        routing.RouteToEndpoint(typeof(SecondCommand), SecondCommand.Endpoint);
+        
         var persistence = endpointConfiguration.UsePersistence<SqlPersistence>();
         persistence.SqlDialect<SqlDialect.MsSqlServer>();
-
         persistence.ConnectionBuilder(() =>
             new Microsoft.Data.SqlClient.SqlConnection(
                 "Server=localhost;Database=Nsb;User Id=sa;Password=SaPassword123;TrustServerCertificate=True"));
-
-// (Optional but common)
+        // (Optional but common)
         // persistence.Schema("dbo");
 
-// --- Consistency features ---
         endpointConfiguration.EnableOutbox();
         persistence.EnableTransactionalSession();
+        
+        var conventions = endpointConfiguration.Conventions();
+        conventions.DefiningCommandsAs(MessageTypes.IsCommand);
+        conventions.DefiningEventsAs(MessageTypes.IsEvent);
+        
         return endpointConfiguration;
     }
 }

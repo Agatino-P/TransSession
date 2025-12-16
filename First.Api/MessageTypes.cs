@@ -1,7 +1,7 @@
 using First.Contracts.NServiceBus.Events;
 using Second.Contracts.NServiceBus.Commands;
 
-namespace TransSession.First.Api;
+namespace First.Api;
 
 public static class MessageTypes
 {

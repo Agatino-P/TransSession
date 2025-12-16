@@ -5,12 +5,12 @@ namespace Second.Api;
 
 public static class MessageTypes
 {
-    public static readonly HashSet<Type> Commands = new()
+    private static readonly HashSet<Type> Commands = new()
     {
         typeof(SecondCommand),
     };
 
-    public static readonly HashSet<Type> Events = new()
+    private static readonly HashSet<Type> Events = new()
     {
         typeof(FirstEvent),
     };
