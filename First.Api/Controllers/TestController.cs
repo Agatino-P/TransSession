@@ -20,15 +20,20 @@ public class TestController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
+        _logger.LogInformation("{Controller}.{Method} was called",
+            this.GetType().Name, nameof(Get));
         return Ok();
     }
     
     [HttpPost]
     [Route("Command")]
-    public async Task<IActionResult> Post([FromBody]SecondCommandDto secondCommand)
+    public async Task<IActionResult> SendCommand([FromBody]SecondCommandDto secondCommandDto)
     {
-        SecondCommand command=new(secondCommand.Text,secondCommand.Number);
-        await _messageSession.Send(command);        
+        _logger.LogInformation("{Controller}.{Method} was called with {SecondCommand}",
+            this.GetType().Name, nameof(SendCommand), secondCommandDto);
+        
+        SecondCommand secondCommand=new(secondCommandDto.Text,secondCommandDto.Number);
+        await _messageSession.Send(secondCommand);        
         return Ok();
     }
 }

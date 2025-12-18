@@ -1,22 +1,22 @@
 using First.Contracts.NServiceBus.Events;
-using Second.Contracts.NServiceBus.Commands;
 
 namespace Second.Api.Handlers;
 
 public class FirstEventHandler : IHandleMessages<FirstEvent>
 {
+    private readonly ILogger<FirstEventHandler> _logger;
+
+    public FirstEventHandler(ILogger<FirstEventHandler> logger)
+    {
+        _logger = logger;
+    }
+    
     public Task Handle(FirstEvent firstEvent, IMessageHandlerContext context)
     {
-        Console.Write(firstEvent);
-        return Task.CompletedTask;
-    }
-}
-
-public class SecondCommandHandler : IHandleMessages<SecondCommand>
-{
-    public Task Handle(SecondCommand secondCommand, IMessageHandlerContext context)
-    {
-        Console.Write(secondCommand);
+        _logger.LogInformation("{Handler}.{Method} received message: {Message}",
+            this.GetType().Name, nameof(Handle),
+            firstEvent);
+        
         return Task.CompletedTask;
     }
 }
