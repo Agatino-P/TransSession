@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TransSession.Tests.WAFs;
 
-public class SecondWaf : LoggingWaf<Second.Api.Program>
+public class SecondWaf : BaseWaf<Second.Api.Program>
 {
 
 }

@@ -1,5 +1,5 @@
 namespace TransSession.Tests.WAFs;
 
-public class FirstWaf : LoggingWaf<First.Api.Program>
+public class FirstWaf : BaseWaf<First.Api.Program>
 {
 }
