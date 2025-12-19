@@ -1,3 +1,4 @@
+using First.Api.Configuration;
 using NServiceBus.TransactionalSession;
 using Second.Contracts.NServiceBus.Commands;
 
@@ -12,7 +13,9 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        var endpointConfiguration = NBusExtensions.CreateEndpoint("First.Api");
+        NServiceBusSettings nServiceBusSettings=builder.Configuration.GetSection("NServiceBus").Get<NServiceBusSettings>()!;
+        
+        var endpointConfiguration = NBusExtensions.CreateEndpoint(nServiceBusSettings);
 
         builder.UseNServiceBus(endpointConfiguration);
 
@@ -35,14 +38,15 @@ public class Program
 
 public static class NBusExtensions
 {
-    public static EndpointConfiguration CreateEndpoint(string endpointName)
+    public static EndpointConfiguration CreateEndpoint(NServiceBusSettings nServiceBusSettings)
     {
-        EndpointConfiguration endpointConfiguration = new EndpointConfiguration(endpointName);
+    
+        EndpointConfiguration endpointConfiguration = new EndpointConfiguration(nServiceBusSettings.EndPointName);
         endpointConfiguration.UseSerialization<SystemJsonSerializer>();
         endpointConfiguration.EnableInstallers();
         
         var transport = endpointConfiguration.UseTransport<RabbitMQTransport>();
-        transport.ConnectionString("host=localhost;username=guest;password=guest");
+        transport.ConnectionString(nServiceBusSettings.RabbitConnectionString);
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
         
         RoutingSettings<RabbitMQTransport> routing=transport.Routing()!;
@@ -52,7 +56,7 @@ public static class NBusExtensions
         persistence.SqlDialect<SqlDialect.MsSqlServer>();
         persistence.ConnectionBuilder(() =>
             new Microsoft.Data.SqlClient.SqlConnection(
-                "Server=localhost;Database=Nsb;User Id=sa;Password=SaPassword123;TrustServerCertificate=True"));
+                nServiceBusSettings.PersistenceConnectionString));
         // (Optional but common)
         // persistence.Schema("dbo");
 
