@@ -1,7 +1,7 @@
 using First.Contracts.NServiceBus.Events;
 using Second.Contracts.NServiceBus.Commands;
 
-namespace Second.Api;
+namespace Shared.Infrastructure.NServiceBus;
 
 public static class MessageTypes
 {
