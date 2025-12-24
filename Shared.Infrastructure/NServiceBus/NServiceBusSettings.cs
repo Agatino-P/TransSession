@@ -1,4 +1,4 @@
-namespace Second.Api.Configuration;
+namespace Shared.Infrastructure.NServiceBus;
 
 public class NServiceBusSettings
 {
