@@ -17,10 +17,9 @@ public class RunTwoWafs : IClassFixture<DualApiFixture>
         _outputHelper = outputHelper;
         
      
-        _firstClient = _fixture.FirstWaf.CreateClientWithXunitLogging(outputHelper);
-        
-   
-        _secondClient = _fixture.SecondWaf.CreateClientWithXunitLogging(outputHelper);
+        _firstClient = _fixture.FirstWaf.CreateClient();
+
+        _secondClient = _fixture.SecondWaf.CreateClient();
 
     }
     

@@ -1,4 +1,4 @@
-namespace First.Api.Configuration;
+namespace Second.Api.Configuration;
 
 public class NServiceBusSettings
 {

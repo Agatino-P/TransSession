@@ -10,6 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dockercompose", "dockercomp
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CPM", "CPM", "{A4616408-ECEC-41EB-B75A-903CC1038324}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "First.Contracts", "First.Contracts\First.Contracts.csproj", "{9DED28EB-8656-4C3A-A016-BA2FDAB79633}"
 EndProject
@@ -18,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Second.Contracts", "Second.Contracts\Second.Contracts.csproj", "{A503B2DC-BD85-4F04-B864-04527E424A1F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransSession.Tests", "TransSession.Tests\TransSession.Tests.csproj", "{6F9583F3-B166-42AB-9BA7-90050CD918E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C09C8B60-2F7D-42B0-9740-E5C99605DDBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +56,6 @@ Global
 		{9DED28EB-8656-4C3A-A016-BA2FDAB79633} = {69FD988F-DDBD-4B29-9E72-1F378E7EE045}
 		{B68E1947-956C-4563-8E0F-4C92B95EA6A4} = {69FD988F-DDBD-4B29-9E72-1F378E7EE045}
 		{A503B2DC-BD85-4F04-B864-04527E424A1F} = {69FD988F-DDBD-4B29-9E72-1F378E7EE045}
-		{6F9583F3-B166-42AB-9BA7-90050CD918E9} = {69FD988F-DDBD-4B29-9E72-1F378E7EE045}
+		{6F9583F3-B166-42AB-9BA7-90050CD918E9} = {C09C8B60-2F7D-42B0-9740-E5C99605DDBE}
 	EndGlobalSection
 EndGlobal
