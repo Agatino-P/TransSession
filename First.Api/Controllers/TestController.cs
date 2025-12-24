@@ -1,7 +1,8 @@
 using First.Contracts.Dtos;
-using First.Contracts.NServiceBus.Events;
 using Microsoft.AspNetCore.Mvc;
 using Second.Contracts.NServiceBus.Commands;
+using Shared.Infrastructure.Database.Entities;
+using Shared.Infrastructure.Database.Repository;
 
 namespace First.Api.Controllers;
 
@@ -10,11 +11,16 @@ namespace First.Api.Controllers;
 public class TestController : ControllerBase
 {
     private readonly IMessageSession _messageSession;
+    private readonly IPocLogEntryRepository _pocLogEntryRepository;
     private readonly ILogger<TestController> _logger;
-    
-    public TestController(IMessageSession messageSession,ILogger<TestController> logger)
+
+    public TestController(
+        IMessageSession messageSession,
+        IPocLogEntryRepository pocLogEntryRepository,
+        ILogger<TestController> logger)
     {
         _messageSession = messageSession;
+        _pocLogEntryRepository = pocLogEntryRepository;
         _logger = logger;
     }
 
@@ -25,17 +31,20 @@ public class TestController : ControllerBase
             this.GetType().Name, nameof(Get));
         return Ok();
     }
-    
+
     [HttpPost]
     [Route("Command")]
-    public async Task<IActionResult> SendCommand([FromBody]SecondCommandDto secondCommandDto)
+    public async Task<IActionResult> SendCommand([FromBody] SecondCommandDto secondCommandDto)
     {
         _logger.LogInformation("{Controller}.{Method} was called with {SecondCommand}",
             this.GetType().Name, nameof(SendCommand), secondCommandDto);
-        FirstEvent firstEvent = new(secondCommandDto.Text, DateTime.Now);
-        await _messageSession.Publish(firstEvent);
-        SecondCommand secondCommand=new(secondCommandDto.Text,secondCommandDto.Number);
-        await _messageSession.Send(secondCommand);        
-        return Ok();
+
+        SecondCommand secondCommand = new(secondCommandDto.Text, secondCommandDto.Number);
+        await _messageSession.Send(secondCommand);
+
+        string commandAsString=secondCommand.ToString();
+        await _pocLogEntryRepository.AddEntry(LogEntryType.CommandSent, commandAsString);
+        
+        return Ok(commandAsString);
     }
 }

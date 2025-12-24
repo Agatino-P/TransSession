@@ -1,20 +1,24 @@
+using Shared.Infrastructure.Database;
 using Shared.Infrastructure.NServiceBus;
 
 namespace First.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        WebApplicationBuilder webApplicationBuilder = WebApplication.CreateBuilder(args);
+        webApplicationBuilder.Services.AddControllers();
+        webApplicationBuilder.Services.AddEndpointsApiExplorer();
+        webApplicationBuilder.Services.AddSwaggerGen();
 
-        builder.SharedConfigureNServiceBus();
+        webApplicationBuilder.SharedConfigureNServiceBus();
+        webApplicationBuilder.SharedAddDbContext();
 
-        var app = builder.Build();
+        webApplicationBuilder.Services.SharedAddRepositories();
 
+        WebApplication app = webApplicationBuilder.Build();
+        
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -24,6 +28,7 @@ public class Program
         app.UseAuthorization();
         app.MapControllers();
 
-        app.Run();
+        await app.EnsurePocDbCreatedAsync();
+        await app.RunAsync();
     }
 }

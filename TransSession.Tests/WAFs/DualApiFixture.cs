@@ -6,9 +6,12 @@ namespace TransSession.Tests.WAFs;
 
 public sealed class DualApiFixture : IAsyncLifetime
 {
-    public FirstWaf FirstWaf { get; private set; } = null!;
-    public SecondWaf SecondWaf { get; private set; } = null!;
+    public HttpClient FirstWafClient{ get; private set; } = null!;
+    public HttpClient SecondWafClient{ get; private set; } = null!;
 
+    private FirstWaf _firstWaf = null!;
+    private SecondWaf _secondWaf= null!;
+    
     private readonly MsSqlContainer _sqlContainer = new MsSqlBuilder()
         .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("SaPassword123")
@@ -32,8 +35,14 @@ public sealed class DualApiFixture : IAsyncLifetime
 
         string sqlConnectionString = await ConfigureSqlServer();
 
-        FirstWaf = new FirstWaf(_rabbitMqContainer.GetConnectionString(), sqlConnectionString);
-        SecondWaf = new SecondWaf(_rabbitMqContainer.GetConnectionString(), sqlConnectionString);
+        _firstWaf = new FirstWaf(_rabbitMqContainer.GetConnectionString(), sqlConnectionString);
+        _secondWaf = new SecondWaf(_rabbitMqContainer.GetConnectionString(), sqlConnectionString);
+        
+        FirstWafClient = _firstWaf.CreateClient();
+        FirstWafClient.Timeout = Timeout.InfiniteTimeSpan;
+        
+        SecondWafClient= _secondWaf.CreateClient();
+        SecondWafClient.Timeout = Timeout.InfiniteTimeSpan;
     }
 
     private async Task<string> ConfigureSqlServer()
@@ -56,8 +65,8 @@ public sealed class DualApiFixture : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        await FirstWaf.DisposeAsync();
-        await SecondWaf.DisposeAsync();
+        await _firstWaf.DisposeAsync();
+        await _secondWaf.DisposeAsync();
         await Task.CompletedTask;
     }
 }

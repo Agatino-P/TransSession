@@ -8,3 +8,4 @@ public class NServiceBusSettings
     public string RabbitMqConnectionString { get; set; } = "";
     public string PersistenceConnectionString { get; set; } = "";
 }
+
