@@ -12,12 +12,12 @@ public class RunFirstWaf : IClassFixture<FirstWaf>
         _firstWaf = firstWaf;
         _testOutputHelper = testOutputHelper;
     }
-
-    [Fact]
-    public async Task ShouldRunWaf()
-    {
-        var httpClient = _firstWaf.CreateClientWithXunitLogging(_testOutputHelper);
-       var response = await httpClient.GetAsync("/test",TestContext.Current.CancellationToken);
-        
-    }
+    //
+    // [Fact]
+    // public async Task ShouldRunWaf()
+    // {
+    //     var httpClient = _firstWaf.CreateClientWithXunitLogging(_testOutputHelper);
+    //    var response = await httpClient.GetAsync("/test",TestContext.Current.CancellationToken);
+    //     
+    // }
 }

@@ -1,4 +1,5 @@
 using First.Contracts.Dtos;
+using First.Contracts.NServiceBus.Events;
 using Microsoft.AspNetCore.Mvc;
 using Second.Contracts.NServiceBus.Commands;
 
@@ -31,7 +32,8 @@ public class TestController : ControllerBase
     {
         _logger.LogInformation("{Controller}.{Method} was called with {SecondCommand}",
             this.GetType().Name, nameof(SendCommand), secondCommandDto);
-        
+        FirstEvent firstEvent = new(secondCommandDto.Text, DateTime.Now);
+        await _messageSession.Publish(firstEvent);
         SecondCommand secondCommand=new(secondCommandDto.Text,secondCommandDto.Number);
         await _messageSession.Send(secondCommand);        
         return Ok();

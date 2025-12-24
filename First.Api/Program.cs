@@ -13,11 +13,15 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        NServiceBusSettings nServiceBusSettings=builder.Configuration.GetSection("NServiceBus").Get<NServiceBusSettings>()!;
-        
-        var endpointConfiguration = NBusExtensions.CreateEndpoint(nServiceBusSettings);
+        builder.Host.UseNServiceBus(hostContext =>
+        {
+            var settings = hostContext.Configuration
+                .GetSection("NServiceBus")
+                .Get<NServiceBusSettings>()!;
 
-        builder.UseNServiceBus(endpointConfiguration);
+            var endpointConfiguration = NBusExtensions.CreateEndpoint(settings);
+            return endpointConfiguration;
+        });
 
         var app = builder.Build();
 
@@ -46,7 +50,7 @@ public static class NBusExtensions
         endpointConfiguration.EnableInstallers();
         
         var transport = endpointConfiguration.UseTransport<RabbitMQTransport>();
-        transport.ConnectionString(nServiceBusSettings.RabbitConnectionString);
+        transport.ConnectionString(nServiceBusSettings.RabbitMqConnectionString);
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
         
         RoutingSettings<RabbitMQTransport> routing=transport.Routing()!;

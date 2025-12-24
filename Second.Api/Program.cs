@@ -1,4 +1,5 @@
 using NServiceBus.TransactionalSession;
+using Second.Api.Configuration;
 using Second.Contracts.NServiceBus.Commands;
 
 namespace Second.Api;
@@ -12,9 +13,15 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        var endpointConfiguration = NBusExtensions.CreateEndpoint("Second.Api");
+        builder.Host.UseNServiceBus(hostContext =>
+        {
+            var settings = hostContext.Configuration
+                .GetSection("NServiceBus")
+                .Get<NServiceBusSettings>()!;
 
-        builder.UseNServiceBus(endpointConfiguration);
+            var endpointConfiguration = NBusExtensions.CreateEndpoint(settings);
+            return endpointConfiguration;
+        });
 
         var app = builder.Build();
 
@@ -31,18 +38,17 @@ public class Program
     }
 }
 
-
-
 public static class NBusExtensions
 {
-    public static EndpointConfiguration CreateEndpoint(string endpointName)
+    public static EndpointConfiguration CreateEndpoint(NServiceBusSettings nServiceBusSettings)
     {
-        EndpointConfiguration endpointConfiguration = new EndpointConfiguration(endpointName);
+    
+        EndpointConfiguration endpointConfiguration = new EndpointConfiguration(nServiceBusSettings.EndPointName);
         endpointConfiguration.UseSerialization<SystemJsonSerializer>();
         endpointConfiguration.EnableInstallers();
         
         var transport = endpointConfiguration.UseTransport<RabbitMQTransport>();
-        transport.ConnectionString("host=localhost;username=guest;password=guest");
+        transport.ConnectionString(nServiceBusSettings.RabbitMqConnectionString);
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
         
         RoutingSettings<RabbitMQTransport> routing=transport.Routing()!;
@@ -52,17 +58,18 @@ public static class NBusExtensions
         persistence.SqlDialect<SqlDialect.MsSqlServer>();
         persistence.ConnectionBuilder(() =>
             new Microsoft.Data.SqlClient.SqlConnection(
-                "Server=localhost;Database=Nsb;User Id=sa;Password=SaPassword123;TrustServerCertificate=True"));
+                nServiceBusSettings.PersistenceConnectionString));
         // (Optional but common)
         // persistence.Schema("dbo");
 
+        // --- Consistency features ---
         endpointConfiguration.EnableOutbox();
         persistence.EnableTransactionalSession();
         
         var conventions = endpointConfiguration.Conventions();
         conventions.DefiningCommandsAs(MessageTypes.IsCommand);
         conventions.DefiningEventsAs(MessageTypes.IsEvent);
-        
+
         return endpointConfiguration;
     }
 }
