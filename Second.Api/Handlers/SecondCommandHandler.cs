@@ -1,10 +1,10 @@
-using Second.Contracts.NServiceBus.Commands;
+using Shared.Infrastructure.Contracts.Commands;
 using Shared.Infrastructure.Database.Entities;
 using Shared.Infrastructure.Database.Repository;
 
 namespace Second.Api.Handlers;
 
-public class SecondCommandHandler : IHandleMessages<SecondCommand>
+public class SecondCommandHandler : IHandleMessages<SecondApiCommand>
 {
     private readonly IPocLogEntryRepository _pocLogEntryRepository;
     private readonly ILogger<SecondCommandHandler> _logger;
@@ -17,13 +17,13 @@ public class SecondCommandHandler : IHandleMessages<SecondCommand>
         _logger = logger;
     }
 
-    public async Task Handle(SecondCommand secondCommand, IMessageHandlerContext context)
+    public async Task Handle(SecondApiCommand secondApiCommand, IMessageHandlerContext context)
     {
         _logger.LogInformation("{Handler}.{Method} received message: {Message}",
             this.GetType().Name, nameof(Handle),
-            secondCommand);
+            secondApiCommand);
 
-        string commandAsString=secondCommand.ToString();
+        string commandAsString=secondApiCommand.ToString();
         await _pocLogEntryRepository.AddEntry(LogEntryType.CommandReceived, commandAsString);
     }
 }

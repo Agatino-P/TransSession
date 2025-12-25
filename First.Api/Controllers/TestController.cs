@@ -1,6 +1,6 @@
-using First.Contracts.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using Second.Contracts.NServiceBus.Commands;
+using Shared.Infrastructure.Contracts.Commands;
+using Shared.Infrastructure.Contracts.Dtos;
 using Shared.Infrastructure.Database.Entities;
 using Shared.Infrastructure.Database.Repository;
 
@@ -34,15 +34,15 @@ public class TestController : ControllerBase
 
     [HttpPost]
     [Route("Command")]
-    public async Task<IActionResult> SendCommand([FromBody] SecondCommandDto secondCommandDto)
+    public async Task<IActionResult> SendCommand([FromBody] FirstApiSendCommandDto firstApiSendCommandDto)
     {
         _logger.LogInformation("{Controller}.{Method} was called with {SecondCommand}",
-            this.GetType().Name, nameof(SendCommand), secondCommandDto);
+            this.GetType().Name, nameof(SendCommand), firstApiSendCommandDto);
 
-        SecondCommand secondCommand = new(secondCommandDto.Text, secondCommandDto.Number);
-        await _messageSession.Send(secondCommand);
+        SecondApiCommand secondApiCommand = new(firstApiSendCommandDto.Text, firstApiSendCommandDto.Number);
+        await _messageSession.Send(secondApiCommand);
 
-        string commandAsString=secondCommand.ToString();
+        string commandAsString=secondApiCommand.ToString();
         await _pocLogEntryRepository.AddEntry(LogEntryType.CommandSent, commandAsString);
         
         return Ok(commandAsString);

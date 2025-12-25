@@ -19,8 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\First.Contracts\First.Contracts.csproj" />
-      <ProjectReference Include="..\Second.Contracts\Second.Contracts.csproj" />
+      <Folder Include="Contracts\" />
     </ItemGroup>
 
 </Project>
