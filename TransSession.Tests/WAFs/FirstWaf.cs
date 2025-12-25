@@ -18,12 +18,12 @@ public class FirstWaf : BaseWaf<First.Api.Program>
     {
         webHostBuilder.ConfigureServices(services =>
         {
-            ServiceDescriptor? existingDescriptor =
+            ServiceDescriptor? existingIGateManagerServiceDescriptor =
                 services.SingleOrDefault(descriptor => descriptor.ServiceType == typeof(IGateManager));
 
-            if (existingDescriptor is not null)
+            if (existingIGateManagerServiceDescriptor is not null)
             {
-                services.Remove(existingDescriptor);
+                services.Remove(existingIGateManagerServiceDescriptor);
             }
 
             services.AddSingleton<IGateManager>(GateManager);
