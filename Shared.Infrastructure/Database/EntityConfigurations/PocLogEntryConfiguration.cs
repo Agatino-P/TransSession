@@ -14,6 +14,7 @@ public sealed class PocLogEntryConfiguration : IEntityTypeConfiguration<PocLogEn
 
         builder.Property(x => x.EntryType)
             .HasConversion<string>()
+            .HasMaxLength(50)  
             .IsRequired();
 
         builder.Property(x => x.Description)

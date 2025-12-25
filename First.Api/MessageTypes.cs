@@ -1,5 +1,5 @@
-using First.Contracts.NServiceBus.Events;
-using Second.Contracts.NServiceBus.Commands;
+using Shared.Infrastructure.Contracts.Commands;
+using Shared.Infrastructure.Contracts.Events;
 
 namespace First.Api;
 
@@ -7,12 +7,12 @@ public static class MessageTypes
 {
     public static readonly HashSet<Type> Commands = new()
     {
-        typeof(SecondCommand),
+        typeof(SecondApiCommand),
     };
 
     public static readonly HashSet<Type> Events = new()
     {
-        typeof(FirstEvent),
+        typeof(FirstApiEvent),
     };
     
     public static bool IsCommand(this Type type) => Commands.Contains(type);

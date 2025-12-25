@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using NServiceBus.TransactionalSession;
-using Second.Contracts.NServiceBus.Commands;
+using Shared.Infrastructure.Contracts.Commands;
 
 namespace Shared.Infrastructure.NServiceBus;
 
@@ -35,7 +35,7 @@ public static class NServiceBusExtensions
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
 
         RoutingSettings<RabbitMQTransport> routing = transport.Routing()!;
-        routing.RouteToEndpoint(typeof(SecondCommand), SecondCommand.Endpoint);
+        routing.RouteToEndpoint(typeof(SecondApiCommand), SecondApiCommand.Endpoint);
 
         var persistence = endpointConfiguration.UsePersistence<SqlPersistence>();
         persistence.SqlDialect<SqlDialect.MsSqlServer>();

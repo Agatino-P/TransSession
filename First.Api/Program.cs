@@ -1,4 +1,5 @@
 using Shared.Infrastructure.Database;
+using Shared.Infrastructure.GateManager;
 using Shared.Infrastructure.NServiceBus;
 
 namespace First.Api;
@@ -16,7 +17,7 @@ public class Program
         webApplicationBuilder.SharedAddDbContext();
 
         webApplicationBuilder.Services.SharedAddRepositories();
-
+        webApplicationBuilder.SharedAddGateManager();
         WebApplication app = webApplicationBuilder.Build();
         
         if (app.Environment.IsDevelopment())

@@ -1,8 +1,8 @@
-using First.Contracts.NServiceBus.Events;
+using Shared.Infrastructure.Contracts.Events;
 
 namespace Second.Api.Handlers;
 
-public class FirstEventHandler : IHandleMessages<FirstEvent>
+public class FirstEventHandler : IHandleMessages<FirstApiEvent>
 {
     private readonly ILogger<FirstEventHandler> _logger;
 
@@ -11,11 +11,11 @@ public class FirstEventHandler : IHandleMessages<FirstEvent>
         _logger = logger;
     }
     
-    public Task Handle(FirstEvent firstEvent, IMessageHandlerContext context)
+    public Task Handle(FirstApiEvent firstApiEvent, IMessageHandlerContext context)
     {
         _logger.LogInformation("{Handler}.{Method} received message: {Message}",
             this.GetType().Name, nameof(Handle),
-            firstEvent);
+            firstApiEvent);
         
         return Task.CompletedTask;
     }
