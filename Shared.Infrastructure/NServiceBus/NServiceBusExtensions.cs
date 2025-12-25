@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using NServiceBus.TransactionalSession;
+using Shared.Infrastructure.Contracts;
 using Shared.Infrastructure.Contracts.Commands;
 
 namespace Shared.Infrastructure.NServiceBus;
@@ -12,11 +13,11 @@ public static class NServiceBusExtensions
     {
         webApplicationBuilder.Host.UseNServiceBus(hostContext =>
         {
-            var settings = hostContext.Configuration
+            NServiceBusSettings settings = hostContext.Configuration
                 .GetSection("NServiceBus")
                 .Get<NServiceBusSettings>()!;
 
-            var endpointConfiguration = NServiceBusExtensions.CreateEndpoint(settings);
+            EndpointConfiguration endpointConfiguration = NServiceBusExtensions.CreateEndpoint(settings);
             return endpointConfiguration;
         });
         
@@ -30,26 +31,23 @@ public static class NServiceBusExtensions
         endpointConfiguration.UseSerialization<SystemJsonSerializer>();
         endpointConfiguration.EnableInstallers();
 
-        var transport = endpointConfiguration.UseTransport<RabbitMQTransport>();
+        TransportExtensions<RabbitMQTransport>? transport = endpointConfiguration.UseTransport<RabbitMQTransport>();
         transport.ConnectionString(nServiceBusSettings.RabbitMqConnectionString);
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
 
         RoutingSettings<RabbitMQTransport> routing = transport.Routing()!;
         routing.RouteToEndpoint(typeof(SecondApiCommand), SecondApiCommand.Endpoint);
 
-        var persistence = endpointConfiguration.UsePersistence<SqlPersistence>();
+        PersistenceExtensions<SqlPersistence> persistence = endpointConfiguration.UsePersistence<SqlPersistence>();
         persistence.SqlDialect<SqlDialect.MsSqlServer>();
         persistence.ConnectionBuilder(() =>
             new Microsoft.Data.SqlClient.SqlConnection(
                 nServiceBusSettings.PersistenceConnectionString));
-        // (Optional but common)
-        // persistence.Schema("dbo");
 
-        // --- Consistency features ---
         endpointConfiguration.EnableOutbox();
         persistence.EnableTransactionalSession();
 
-        var conventions = endpointConfiguration.Conventions();
+        ConventionsBuilder? conventions = endpointConfiguration.Conventions();
         conventions.DefiningCommandsAs(MessageTypes.IsCommand);
         conventions.DefiningEventsAs(MessageTypes.IsEvent);
 

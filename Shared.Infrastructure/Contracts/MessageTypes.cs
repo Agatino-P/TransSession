@@ -1,16 +1,16 @@
 using Shared.Infrastructure.Contracts.Commands;
 using Shared.Infrastructure.Contracts.Events;
 
-namespace Shared.Infrastructure.NServiceBus;
+namespace Shared.Infrastructure.Contracts;
 
 public static class MessageTypes
 {
-    private static readonly HashSet<Type> Commands = new()
+    public static readonly HashSet<Type> Commands = new()
     {
         typeof(SecondApiCommand),
     };
 
-    private static readonly HashSet<Type> Events = new()
+    public static readonly HashSet<Type> Events = new()
     {
         typeof(FirstApiEvent),
     };
