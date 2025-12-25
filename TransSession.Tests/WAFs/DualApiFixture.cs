@@ -1,4 +1,8 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Shared.Infrastructure.Database;
+using Shared.Infrastructure.Database.Repository;
+using Shared.Infrastructure.GateManager;
 using Testcontainers.RabbitMq;
 using Testcontainers.MsSql;
 
@@ -7,7 +11,11 @@ namespace TransSession.Tests.WAFs;
 public sealed class DualApiFixture : IAsyncLifetime
 {
     public HttpClient FirstWafClient{ get; private set; } = null!;
-    public HttpClient SecondWafClient{ get; private set; } = null!;
+    private HttpClient SecondWafClient{ get; set; } = null!;
+    public PocDbContext PocDbContext { get; private set; } = null!;
+    public PocLogEntryRepository PocLogEntryRepository { get; private set; } = null!;
+    
+    public MultiGateManager FirstWafGateManager=>_firstWaf.GateManager;
 
     private FirstWaf _firstWaf = null!;
     private SecondWaf _secondWaf= null!;
@@ -34,30 +42,53 @@ public sealed class DualApiFixture : IAsyncLifetime
         );
 
         string sqlConnectionString = await ConfigureSqlServer();
+        
+        initializeDbContext(sqlConnectionString);
+        initializeRepository();
+        
+        initializeWafClients(sqlConnectionString);
+    }
 
+    private void initializeRepository()
+    {
+        PocLogEntryRepository = new PocLogEntryRepository(PocDbContext);
+    }
+
+    private void initializeDbContext(string sqlConnectionString)
+    {
+        DbContextOptions<PocDbContext> pocDbContextOptions = new DbContextOptionsBuilder<PocDbContext>()
+            .UseSqlServer(sqlConnectionString) 
+            .Options;
+
+        PocDbContext=new PocDbContext(pocDbContextOptions);
+    }
+
+    private void initializeWafClients(string sqlConnectionString)
+    {
         _firstWaf = new FirstWaf(_rabbitMqContainer.GetConnectionString(), sqlConnectionString);
         _secondWaf = new SecondWaf(_rabbitMqContainer.GetConnectionString(), sqlConnectionString);
         
         FirstWafClient = _firstWaf.CreateClient();
-        FirstWafClient.Timeout = Timeout.InfiniteTimeSpan;
+        FirstWafClient.Timeout=TimeSpan.FromSeconds(30);
         
         SecondWafClient= _secondWaf.CreateClient();
         SecondWafClient.Timeout = Timeout.InfiniteTimeSpan;
+        
     }
 
     private async Task<string> ConfigureSqlServer()
     {
-        var masterConnectionString = _sqlContainer.GetConnectionString();
-        await using (var sqlConnection = new SqlConnection(masterConnectionString))
+        string masterConnectionString = _sqlContainer.GetConnectionString()!;
+        await using (SqlConnection sqlConnection = new SqlConnection(masterConnectionString))
         {
             await sqlConnection.OpenAsync();
-            await using var sqlCommand = sqlConnection.CreateCommand();
+            await using SqlCommand? sqlCommand = sqlConnection.CreateCommand();
             sqlCommand.CommandText = "IF DB_ID(N'poc') IS NULL CREATE DATABASE [poc];";
             await sqlCommand.ExecuteNonQueryAsync();
         }
 
         SqlConnectionStringBuilder sqlConnectionStringBuilder =
-            new SqlConnectionStringBuilder(masterConnectionString) { InitialCatalog = "poc" };
+            new (masterConnectionString) { InitialCatalog = "poc" };
         string sqlConnectionString = sqlConnectionStringBuilder.ToString();
         
         return sqlConnectionString;

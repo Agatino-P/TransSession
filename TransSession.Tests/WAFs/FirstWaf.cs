@@ -1,28 +1,33 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Shared.Infrastructure.GateManager;
+
 namespace TransSession.Tests.WAFs;
 
 public class FirstWaf : BaseWaf<First.Api.Program>
 {
-    // private readonly string _rabbitMqConnectionString;
-    // private readonly string _msSqlConnectionString;
 
+    public MultiGateManager GateManager { get; } = new MultiGateManager();
+    
     public FirstWaf(string rabbitMqConnectionString, string msSqlConnectionString)
         : base(rabbitMqConnectionString, msSqlConnectionString)
     {
-        // _rabbitMqConnectionString = rabbitMqConnectionString;
-        // _msSqlConnectionString = msSqlConnectionString;
     }
 
-    // protected override IHost CreateHost(IHostBuilder builder)
-    // {
-    //     builder.ConfigureHostConfiguration (cfg =>
-    //     {
-    //         Dictionary<string, string?> keyValuePairs = new Dictionary<string, string?>
-    //         {
-    //             ["NServiceBus:RabbitMqConnectionString"] = _rabbitMqConnectionString,
-    //             ["NServiceBus:PersistenceConnectionString"] = _msSqlConnectionString,
-    //         };
-    //         cfg.AddInMemoryCollection(keyValuePairs);
-    //     });
-    //     return base.CreateHost(builder);
-    // }
+    protected override void ConfigureWebHost(IWebHostBuilder webHostBuilder)
+    {
+        webHostBuilder.ConfigureServices(services =>
+        {
+            ServiceDescriptor? existingDescriptor =
+                services.SingleOrDefault(descriptor => descriptor.ServiceType == typeof(IGateManager));
+
+            if (existingDescriptor is not null)
+            {
+                services.Remove(existingDescriptor);
+            }
+
+            services.AddSingleton<IGateManager>(GateManager);
+        });
+        base.ConfigureWebHost(webHostBuilder);
+    }
 }

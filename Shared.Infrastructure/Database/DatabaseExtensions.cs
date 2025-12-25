@@ -12,7 +12,7 @@ public static class DatabaseExtensions
     {
         webApplicationBuilder.Services.AddDbContext<PocDbContext>((sp, options) =>
         {
-            var settings = webApplicationBuilder.Configuration
+            NServiceBusSettings settings = webApplicationBuilder.Configuration
                 .GetSection("NServiceBus")
                 .Get<NServiceBusSettings>()!;
 
@@ -24,8 +24,8 @@ public static class DatabaseExtensions
 
     public static async Task EnsurePocDbCreatedAsync(this WebApplication app)
     {
-        using var scope = app.Services.CreateScope();
-        var pocDbContext = scope.ServiceProvider.GetRequiredService<PocDbContext>();
+        using IServiceScope scope = app.Services.CreateScope();
+        PocDbContext pocDbContext = scope.ServiceProvider.GetRequiredService<PocDbContext>();
 
         await pocDbContext.Database.EnsureCreatedAsync();
     }

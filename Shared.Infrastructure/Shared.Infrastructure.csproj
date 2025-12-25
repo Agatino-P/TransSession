@@ -18,8 +18,4 @@
         <PackageReference Include="NServiceBus.RabbitMQ"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Contracts\" />
-    </ItemGroup>
-
 </Project>
