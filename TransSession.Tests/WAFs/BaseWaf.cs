@@ -10,27 +10,29 @@ namespace TransSession.Tests.WAFs;
 public abstract class BaseWaf<T> : WebApplicationFactory<T>
     where T : class
 {
-   
     private readonly string _rabbitMqConnectionString;
     private readonly string _msSqlConnectionString;
-    protected readonly MultiGateManager MultiGateManager;
+    private readonly string _nginxBaseAddress;
+    private readonly MultiGateManager _multiGateManager;
 
-    public BaseWaf(
+    protected BaseWaf(
         string rabbitMqConnectionString,
         string msSqlConnectionString,
+        string nginxBaseAddress,
         MultiGateManager multiGateManager
-        )
+    )
     {
         _rabbitMqConnectionString = rabbitMqConnectionString;
         _msSqlConnectionString = msSqlConnectionString;
-        MultiGateManager = multiGateManager;
+        _nginxBaseAddress = nginxBaseAddress;
+        _multiGateManager = multiGateManager;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
-        builder.ConfigureHostConfiguration (cfg =>
+        builder.ConfigureHostConfiguration(cfg =>
         {
-            Dictionary<string, string?> keyValuePairs = new Dictionary<string, string?>
+            Dictionary<string, string?> keyValuePairs = new()
             {
                 ["NServiceBus:RabbitMqConnectionString"] = _rabbitMqConnectionString,
                 ["NServiceBus:PersistenceConnectionString"] = _msSqlConnectionString,
@@ -39,9 +41,18 @@ public abstract class BaseWaf<T> : WebApplicationFactory<T>
         });
         return base.CreateHost(builder);
     }
-    
+
     protected override void ConfigureWebHost(IWebHostBuilder webHostBuilder)
     {
+        webHostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
+        {
+            Dictionary<string, string?> keyValuePairs = new ()
+            {
+                ["Nginx:BaseAddress"] = _nginxBaseAddress
+            };
+            config.AddInMemoryCollection(keyValuePairs);
+        });
+        
         webHostBuilder.ConfigureServices(services =>
         {
             ServiceDescriptor? existingIGateManagerServiceDescriptor =
@@ -52,9 +63,9 @@ public abstract class BaseWaf<T> : WebApplicationFactory<T>
                 services.Remove(existingIGateManagerServiceDescriptor);
             }
 
-            services.AddSingleton<IGateManager>(MultiGateManager);
+            services.AddSingleton<IGateManager>(_multiGateManager);
         });
+
         base.ConfigureWebHost(webHostBuilder);
     }
-
 }

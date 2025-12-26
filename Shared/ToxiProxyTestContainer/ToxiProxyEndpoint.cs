@@ -1,5 +1,4 @@
-﻿using Docker.DotNet.Models;
-using Toxiproxy.Net.Toxics;
+﻿using Toxiproxy.Net.Toxics;
 
 namespace Shared.Infrastructure.ToxiProxyTestContainer;
 

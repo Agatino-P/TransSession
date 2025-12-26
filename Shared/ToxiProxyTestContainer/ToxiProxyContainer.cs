@@ -1,12 +1,10 @@
 ﻿using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
-using Shared.Infrastructure.ToxiProxyTestContainer;
 using Testcontainers.Toxiproxy;
 using Toxiproxy.Net;
 using Toxiproxy.Net.Toxics;
 
-
-namespace ToxiProxyWrapper;
+namespace Shared.Infrastructure.ToxiProxyTestContainer;
 
 public sealed class ToxiProxyContainer : IAsyncDisposable
 {

@@ -16,6 +16,7 @@
         </PackageReference>
         <PackageReference Include="MartinCostello.Logging.XUnit.v3" />
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="Shouldly" />
         <PackageReference Include="Testcontainers.MsSql" />
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Testcontainers.Toxiproxy" />

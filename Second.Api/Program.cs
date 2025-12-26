@@ -9,12 +9,17 @@ public class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder webApplicationBuilder = WebApplication.CreateBuilder(args);
-        webApplicationBuilder.Services.AddControllers();
+
+        webApplicationBuilder.Services.AddScoped<TransactionalSessionFilter>();
+        webApplicationBuilder.Services.AddControllers(
+            o => o.Filters.AddService<TransactionalSessionFilter>()
+        );
+        
         webApplicationBuilder.Services.AddEndpointsApiExplorer();
         webApplicationBuilder.Services.AddSwaggerGen();
 
         webApplicationBuilder.SharedConfigureNServiceBus();
-        webApplicationBuilder.SharedAddDbContext();
+        webApplicationBuilder.SharedAddTransactionalSessionAwarePocDbContext();
         
         webApplicationBuilder.Services.SharedAddRepositories();
         webApplicationBuilder.SharedAddGateManager();

@@ -1,4 +1,5 @@
 using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,6 @@ using Shared.Infrastructure.GateManager;
 using Shared.Infrastructure.ToxiProxyTestContainer;
 using Testcontainers.RabbitMq;
 using Testcontainers.MsSql;
-using ToxiProxyWrapper;
 
 namespace TransSession.Tests.WAFs;
 
@@ -19,27 +19,33 @@ public sealed class DualApiFixture : IAsyncLifetime
     public PocDbContext PocDbContext { get; private set; } = null!;
     public PocLogEntryRepository PocLogEntryRepository { get; private set; } = null!;
 
-    public MultiGateManager MultiGateManager = new MultiGateManager();
+    public readonly MultiGateManager MultiGateManager = new MultiGateManager();
 
+    public ToxiProxyEndpoint NginxProxy = null!;
+    public async Task RestoreAllProxiesAsync() => await _toxiProxyContainer.RestoreAllAsync();
+    
+    
     private FirstWaf _firstWaf = null!;
     private SecondWaf _secondWaf = null!;
 
-    private ToxiProxyEndpoint _msSqlProxy=null!;
-    private ToxiProxyEndpoint _rabbitProxy=null!;
+    private ToxiProxyEndpoint _msSqlProxy = null!;
+    private ToxiProxyEndpoint _rabbitProxy = null!;
     
     private const string _rabbitMqAlias = "rabbitmq";
     private const string _msSqlAlias = "mssql";
+    private const string _nginxAlias = "nginx";
     private const string _toxiproxyAlias = "toxiproxy";
 
     private readonly INetwork _network;
     private readonly MsSqlContainer _sqlContainer;
     private readonly RabbitMqContainer _rabbitMqContainer;
-    private ToxiProxyContainer ToxiProxyContainer { get; }
+    private readonly IContainer _nginxContainer;
+    private readonly ToxiProxyContainer _toxiProxyContainer;
 
     public DualApiFixture()
     {
         _network = new NetworkBuilder().Build();
-        
+
         _sqlContainer = new MsSqlBuilder()
             .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
             .WithPassword("SaPassword123")
@@ -58,7 +64,13 @@ public sealed class DualApiFixture : IAsyncLifetime
             .WithNetworkAliases(_rabbitMqAlias)
             .Build();
 
-        ToxiProxyContainer = new ToxiProxyContainer(
+        _nginxContainer = new ContainerBuilder()
+            .WithImage("nginx:alpine")
+            .WithNetwork(_network)
+            .WithNetworkAliases(_nginxAlias)
+            .Build();
+
+        _toxiProxyContainer = new ToxiProxyContainer(
             network: _network,
             networkAlias: _toxiproxyAlias);
     }
@@ -67,48 +79,55 @@ public sealed class DualApiFixture : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         await _network.CreateAsync(); // if available in your version
-        
+
         await Task.WhenAll(
             _sqlContainer.StartAsync(),
             _rabbitMqContainer.StartAsync(),
-            ToxiProxyContainer.StartAsync()
+            _nginxContainer.StartAsync(),
+            _toxiProxyContainer.StartAsync()
         );
 
         await ConfigureSqlServer();
-        
-        _msSqlProxy = await ToxiProxyContainer.CreateProxyAsync(
+
+        _msSqlProxy = await _toxiProxyContainer.CreateProxyAsync(
             name: "mssql-proxy",
-            proxiedHost:_msSqlAlias,
+            proxiedHost: _msSqlAlias,
             proxiedPort: 1433
         );
 
         SqlConnectionStringBuilder sqlConnectionStringBuilder =
             new(_sqlContainer.GetConnectionString())
             {
-                DataSource =$"{_msSqlProxy.MappedHost},{_msSqlProxy.MappedPort}",
-                InitialCatalog = "poc"
+                DataSource = $"{_msSqlProxy.MappedHost},{_msSqlProxy.MappedPort}", InitialCatalog = "poc"
             };
-        
+
         string sqlConnectionString = sqlConnectionStringBuilder.ConnectionString;
 
         initializeDbContext(sqlConnectionString);
         initializeRepository();
 
-        _rabbitProxy = await ToxiProxyContainer.CreateProxyAsync(
+        _rabbitProxy = await _toxiProxyContainer.CreateProxyAsync(
             name: "rabbitmq-proxy",
-            proxiedHost:_rabbitMqAlias,
+            proxiedHost: _rabbitMqAlias,
             proxiedPort: 5672
         );
-        
+
         UriBuilder rabbitMqUriBuilder = new UriBuilder(_rabbitMqContainer.GetConnectionString())
         {
-            Host = _rabbitProxy.MappedHost,
-            Port = _rabbitProxy.MappedPort,
+            Host = _rabbitProxy.MappedHost, Port = _rabbitProxy.MappedPort,
         };
-        
-        string rabbitMqConnectionString=rabbitMqUriBuilder.ToString();
-        
-        initializeWafClients(sqlConnectionString,  rabbitMqConnectionString);
+
+        string rabbitMqConnectionString = rabbitMqUriBuilder.ToString();
+
+        NginxProxy = await _toxiProxyContainer.CreateProxyAsync(
+            name: "nginx-proxy",
+            proxiedHost: _nginxAlias,
+            proxiedPort: 80
+        );
+
+        string toxiProxyBaseAddress = $"http://{NginxProxy.MappedHost}:{NginxProxy.MappedPort}/";
+
+        initializeWafClients(sqlConnectionString, rabbitMqConnectionString, toxiProxyBaseAddress);
     }
 
     private void initializeRepository()
@@ -125,18 +144,25 @@ public sealed class DualApiFixture : IAsyncLifetime
         PocDbContext = new PocDbContext(pocDbContextOptions);
     }
 
-    private void initializeWafClients(string sqlConnectionString, string rabbitMqConnectionString, TimeSpan? restTimeout = null)
+    private void initializeWafClients(
+        string msSqlConnectionString,
+        string rabbitMqConnectionString,
+        string nginxBaseAddress)
     {
-        TimeSpan effectiveTimeout= restTimeout ?? TimeSpan.FromSeconds(30);
-        
-        _firstWaf = new FirstWaf(rabbitMqConnectionString, sqlConnectionString, MultiGateManager);
-        _secondWaf = new SecondWaf(rabbitMqConnectionString, sqlConnectionString, MultiGateManager);
+        _firstWaf = new FirstWaf(
+            rabbitMqConnectionString: rabbitMqConnectionString,
+            msSqlConnectionString: msSqlConnectionString,
+            nginxBaseAddress: nginxBaseAddress,
+            MultiGateManager);
+        _secondWaf = new SecondWaf(
+            rabbitMqConnectionString: rabbitMqConnectionString,
+            msSqlConnectionString: msSqlConnectionString, 
+            nginxBaseAddress: nginxBaseAddress,
+            MultiGateManager);
 
         FirstWafClient = _firstWaf.CreateClient();
-        FirstWafClient.Timeout = effectiveTimeout;
 
         SecondWafClient = _secondWaf.CreateClient();
-        SecondWafClient.Timeout = effectiveTimeout;
     }
 
     private async Task ConfigureSqlServer()
