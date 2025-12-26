@@ -2,8 +2,9 @@
 
 public interface IGateManager
 {
-    const string BeforeDoingWorkGate = "BeforeDoingWork";
-    const string AfterDoingWorkGate = "AfterDoingWork";
+    const string BeforeDoingWorkGate = nameof(BeforeDoingWorkGate);
+    const string FistApiSayWhenDoneGate = nameof(FistApiSayWhenDoneGate);
+    const string SecondApiSayWhenDoneGate = nameof(SecondApiSayWhenDoneGate);
     const string GateLoggingFileName = "GateLoggingFile.txt"; 
     
     // Called by your app/controller code
