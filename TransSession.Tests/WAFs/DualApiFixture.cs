@@ -15,11 +15,11 @@ namespace TransSession.Tests.WAFs;
 public sealed class DualApiFixture : IAsyncLifetime
 {
     public HttpClient FirstWafClient { get; private set; } = null!;
-    private HttpClient SecondWafClient { get; set; } = null!;
+    public HttpClient SecondWafClient { get; set; } = null!;
     public PocDbContext PocDbContext { get; private set; } = null!;
     public PocLogEntryRepository PocLogEntryRepository { get; private set; } = null!;
 
-    public MultiGateManager FirstWafGateManager => _firstWaf.GateManager;
+    public MultiGateManager MultiGateManager = new MultiGateManager();
 
     private FirstWaf _firstWaf = null!;
     private SecondWaf _secondWaf = null!;
@@ -125,16 +125,18 @@ public sealed class DualApiFixture : IAsyncLifetime
         PocDbContext = new PocDbContext(pocDbContextOptions);
     }
 
-    private void initializeWafClients(string sqlConnectionString, string rabbitMqConnectionString)
+    private void initializeWafClients(string sqlConnectionString, string rabbitMqConnectionString, TimeSpan? restTimeout = null)
     {
-        _firstWaf = new FirstWaf(rabbitMqConnectionString, sqlConnectionString);
-        _secondWaf = new SecondWaf(rabbitMqConnectionString, sqlConnectionString);
+        TimeSpan effectiveTimeout= restTimeout ?? TimeSpan.FromSeconds(30);
+        
+        _firstWaf = new FirstWaf(rabbitMqConnectionString, sqlConnectionString, MultiGateManager);
+        _secondWaf = new SecondWaf(rabbitMqConnectionString, sqlConnectionString, MultiGateManager);
 
         FirstWafClient = _firstWaf.CreateClient();
-        FirstWafClient.Timeout = TimeSpan.FromSeconds(30);
+        FirstWafClient.Timeout = effectiveTimeout;
 
         SecondWafClient = _secondWaf.CreateClient();
-        SecondWafClient.Timeout = Timeout.InfiniteTimeSpan;
+        SecondWafClient.Timeout = effectiveTimeout;
     }
 
     private async Task ConfigureSqlServer()

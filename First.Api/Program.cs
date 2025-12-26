@@ -18,6 +18,7 @@ public class Program
 
         webApplicationBuilder.Services.SharedAddRepositories();
         webApplicationBuilder.SharedAddGateManager();
+        
         WebApplication app = webApplicationBuilder.Build();
         
         if (app.Environment.IsDevelopment())

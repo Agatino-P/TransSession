@@ -42,15 +42,48 @@ public class PocTests : IClassFixture<DualApiFixture>
         FirstApiPauseDto firstApiPauseDto  = new(guid.ToString());
         Task<HttpResponseMessage> restRequestTask =  _fixture.FirstWafClient.PostAsJsonAsync("Test/Pause", firstApiPauseDto,cancellationToken);
 
-        await _fixture.FirstWafGateManager.WaitUntilReached(IGateManager.BeforeDoingWorkGate, cancellationToken);
+        await _fixture.MultiGateManager.WaitUntilReached(IGateManager.BeforeDoingWorkGate, cancellationToken);
         await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - Gate reached");
         
         await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - Releasing gate");
-        _fixture.FirstWafGateManager.ReleaseGate(IGateManager.BeforeDoingWorkGate);
+        _fixture.MultiGateManager.ReleaseGate(IGateManager.BeforeDoingWorkGate);
         
         HttpResponseMessage restResponse=await restRequestTask;
         await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - Rest request completes");
         
         restResponse.EnsureSuccessStatusCode();
     }
+
+    [Fact]
+    public async Task Should_PauseAndWait_ForBothWaf()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - Started");
+        
+        _fixture.FirstWafClient.Timeout=TimeSpan.FromSeconds(150);
+        _fixture.SecondWafClient.Timeout=TimeSpan.FromSeconds(150);
+        Task<HttpResponseMessage> firstApiRestRequestTask =  _fixture.FirstWafClient.GetAsync("Test/SayWhenDone", cancellationToken);
+        Task<HttpResponseMessage> secondApiRestRequestTask =  _fixture.SecondWafClient.GetAsync("Test/SayWhenDone", cancellationToken);
+        
+        await _fixture.MultiGateManager.WaitUntilReached(IGateManager.SecondApiSayWhenDoneGate, cancellationToken);
+        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - SecondApi Gate reached");
+        _fixture.MultiGateManager.ReleaseGate(IGateManager.SecondApiSayWhenDoneGate);
+        
+        await _fixture.MultiGateManager.WaitUntilReached(IGateManager.FistApiSayWhenDoneGate, cancellationToken);
+        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - FirstApi Gate reached");
+         _fixture.MultiGateManager.ReleaseGate(IGateManager.FistApiSayWhenDoneGate);
+        
+        HttpResponseMessage firstRestResponse=await firstApiRestRequestTask;
+        firstRestResponse.EnsureSuccessStatusCode();
+
+        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - First Rest request completes");
+
+        HttpResponseMessage secondRestResponse=await secondApiRestRequestTask;
+        secondRestResponse.EnsureSuccessStatusCode();
+        
+        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Test - Second Rest request completes");
+        
+    }
+    
+    
 }

@@ -68,5 +68,17 @@ public class TestController : ControllerBase
         return Ok(dto.Text);
     }
 
-    
+    [HttpGet]
+    [Route("SayWhenDone")]
+    public async Task<IActionResult> SayWhenDone(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("{Controller}.{Method} was called",
+            this.GetType().Name, nameof(SayWhenDone));
+
+        await _pocLogEntryRepository.AddEntry(LogEntryType.RestCallReceived, nameof(SayWhenDone));
+        
+        await _gateManager.GateReached(IGateManager.FistApiSayWhenDoneGate, cancellationToken);
+        
+        return Ok();
+    }
 }
