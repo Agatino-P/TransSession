@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Shared.Infrastructure.Contracts.Commands;
 using Shared.Infrastructure.Contracts.Dtos;
 using Shared.Infrastructure.Database.Entities;
 using Shared.Infrastructure.Database.Repository;
 using Shared.Infrastructure.GateManager;
+using Shared.Infrastructure.Nginx;
 
 namespace First.Api.Controllers;
 
@@ -14,17 +16,20 @@ public class TestController : ControllerBase
     private readonly IMessageSession _messageSession;
     private readonly IPocLogEntryRepository _pocLogEntryRepository;
     private readonly IGateManager _gateManager;
+    private readonly NginxSettings _nginxSettings;
     private readonly ILogger<TestController> _logger;
 
     public TestController(
         IMessageSession messageSession,
         IPocLogEntryRepository pocLogEntryRepository,
         IGateManager gateManager,
+        IOptions<NginxSettings> nginxSettingsOptions,
         ILogger<TestController> logger)
     {
         _messageSession = messageSession;
         _pocLogEntryRepository = pocLogEntryRepository;
         _gateManager = gateManager;
+        _nginxSettings = nginxSettingsOptions.Value;
         _logger = logger;
     }
 
@@ -60,9 +65,9 @@ public class TestController : ControllerBase
             this.GetType().Name, nameof(Pause), dto);
 
         await _pocLogEntryRepository.AddEntry(LogEntryType.RestCallReceived, dto.Text);
-        
+
         await _gateManager.GateReached(IGateManager.BeforeDoingWorkGate, cancellationToken);
-        
+
         await _pocLogEntryRepository.AddEntry(LogEntryType.EntryAdded, "Controller - Gate Released");
 
         return Ok(dto.Text);
@@ -76,9 +81,31 @@ public class TestController : ControllerBase
             this.GetType().Name, nameof(SayWhenDone));
 
         await _pocLogEntryRepository.AddEntry(LogEntryType.RestCallReceived, nameof(SayWhenDone));
-        
+
         await _gateManager.GateReached(IGateManager.FistApiSayWhenDoneGate, cancellationToken);
-        
+
         return Ok();
+    }
+
+    [HttpPost]
+    [Route("CanFail")]
+    public async Task<IActionResult> CanFail([FromBody] FirstApiCanFailDto dto, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("{Controller}.{Method} was called with {Dto}",
+            this.GetType().Name, nameof(CanFail), dto);
+
+        await _pocLogEntryRepository.AddEntry(LogEntryType.RestCallReceived,
+            $"{nameof(TestController)}.{nameof(CanFail)}, Dto: {dto}");
+
+        await _pocLogEntryRepository.AddEntry(LogEntryType.AppGateReached, IGateManager.BeforeDoingWorkGate);
+        await _gateManager.GateReached(IGateManager.BeforeDoingWorkGate, cancellationToken);
+
+        using HttpClient httpClient = new() { BaseAddress = new Uri(_nginxSettings.BaseAddress) };
+        HttpResponseMessage response = await httpClient.GetAsync("/", cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await _pocLogEntryRepository.AddEntry(LogEntryType.RestCallCompleted, nameof(CanFail));
+
+        return Ok(dto.Text);
     }
 }

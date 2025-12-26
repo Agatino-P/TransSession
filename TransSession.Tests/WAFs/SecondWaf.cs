@@ -4,8 +4,17 @@ namespace TransSession.Tests.WAFs;
 
 public class SecondWaf : BaseWaf<Second.Api.Program>
 {
-    public SecondWaf(string rabbitMqConnectionString, string msSqlConnectionString, MultiGateManager multiGateManager) 
-        : base(rabbitMqConnectionString, msSqlConnectionString, multiGateManager)
+    public SecondWaf
+    (
+        string rabbitMqConnectionString,
+        string msSqlConnectionString,
+        string nginxBaseAddress,
+        MultiGateManager multiGateManager)
+        : base(
+            rabbitMqConnectionString: rabbitMqConnectionString,
+            msSqlConnectionString: msSqlConnectionString,
+            nginxBaseAddress: nginxBaseAddress,
+            multiGateManager: multiGateManager)
     {
     }
 }
