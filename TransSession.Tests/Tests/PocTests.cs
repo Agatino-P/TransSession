@@ -1,8 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Shared.Infrastructure.Contracts.Dtos;
 using Shared.Infrastructure.Database.Entities;
 using Shared.Infrastructure.GateManager;
 using Shouldly;
+using Toxiproxy.Net.Toxics;
 using TransSession.Tests.WAFs;
 
 namespace TransSession.Tests.Tests;
@@ -106,42 +108,56 @@ public class PocTests : IClassFixture<DualApiFixture>, IAsyncLifetime
         HttpResponseMessage restResponse = await firstApiRestRequestTask;
         restResponse.EnsureSuccessStatusCode();
 
-        _fixture.PocDbContext.LogEntries.FirstOrDefault(entry => entry.Description == "Controller - Completed")
+        _fixture.PocDbContext.LogEntries.AsNoTracking().FirstOrDefault(entry => entry.EntryType ==LogEntryType.RestCallCompleted)
             .ShouldNotBeNull();
     }
 
     [Fact]
     public async Task Should_LeaveDbClean_OnExternalWebSiteFailure()
     {
-        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        var ct = TestContext.Current.CancellationToken;
+        var toxicName = Guid.NewGuid().ToString();
 
-        string guidTxt = Guid.NewGuid().ToString();
-        _outputHelper.WriteLine($"Guid: {guidTxt}");
+        var dto = new FirstApiCanFailDto(toxicName);
+        var task = _fixture.FirstWafClient.PostAsJsonAsync("Test/CanFail", dto, ct);
 
-        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.TestStarted, guidTxt);
+        await _fixture.MultiGateManager.WaitUntilReached(IGateManager.BeforeDoingWorkGate, ct);
 
-        FirstApiCanFailDto dto = new(guidTxt);
-        Task<HttpResponseMessage> firstApiRestRequestTask =
-            _fixture.FirstWafClient.PostAsJsonAsync("Test/CanFail", dto, cancellationToken);
+        await _fixture.NginxProxy.AddResetPeerAsync(toxicName+"-up", ToxicDirection.UpStream);
+        await _fixture.NginxProxy.AddResetPeerAsync(toxicName + "-down", ToxicDirection.DownStream);
 
-        await _fixture.MultiGateManager.WaitUntilReached(IGateManager.BeforeDoingWorkGate, cancellationToken);
-        await _fixture.PocLogEntryRepository.AddEntry(LogEntryType.TestWaitUntilReachedComplete,
-            IGateManager.BeforeDoingWorkGate);
+        try
+        {
+            _fixture.MultiGateManager.ReleaseGate(IGateManager.BeforeDoingWorkGate);
 
-        await _fixture.NginxProxy.DisableAsync();
-        
-        _fixture.MultiGateManager.ReleaseGate(IGateManager.BeforeDoingWorkGate);
+            var resp = await task;
+            resp.IsSuccessStatusCode.ShouldBeFalse();
 
-        HttpResponseMessage restResponse = await firstApiRestRequestTask;
-        restResponse.IsSuccessStatusCode.ShouldBeFalse();
+            _fixture.PocDbContext.LogEntries.AsNoTracking()
+                .FirstOrDefault(e => e.EntryType == LogEntryType.RestCallReceived)
+                .ShouldBeNull();
 
-        _fixture.PocDbContext.LogEntries.FirstOrDefault(entry => entry.EntryType == LogEntryType.RestCallReceived)
-            .ShouldBeNull();
-
-        _fixture.PocDbContext.LogEntries.FirstOrDefault(entry => entry.EntryType == LogEntryType.RestCallCompleted)
-            .ShouldBeNull();
+            _fixture.PocDbContext.LogEntries.AsNoTracking()
+                .FirstOrDefault(e => e.EntryType == LogEntryType.RestCallCompleted)
+                .ShouldBeNull();
+        }
+        finally
+        {
+            // Always cleanup, even if assertions fail
+            try { await _fixture.NginxProxy.RemoveToxicAsync(toxicName + "-up"); } catch { }
+            try { await _fixture.NginxProxy.RemoveToxicAsync(toxicName + "-down"); } catch { }
+        }
     }
 
-    public async ValueTask DisposeAsync() => await _fixture.RestoreAllProxiesAsync();
-    public async ValueTask InitializeAsync() => await _fixture.RestoreAllProxiesAsync();
+    public async ValueTask InitializeAsync()
+    {
+        await _fixture.PocDbContext.LogEntries.ExecuteDeleteAsync();
+        _fixture.PocDbContext.ChangeTracker.Clear();
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        await _fixture.PocDbContext.LogEntries.ExecuteDeleteAsync();
+        _fixture.PocDbContext.ChangeTracker.Clear();
+    }
 }

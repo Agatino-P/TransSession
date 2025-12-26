@@ -2,10 +2,12 @@ namespace Shared.Infrastructure.NServiceBus;
 
 public class NServiceBusSettings
 {
-    const string NServiceBusSectionName = "NServiceBus";
+    public const string SectionName = "NServiceBus";
 
     public string EndPointName { get; set; } = "";
     public string RabbitMqConnectionString { get; set; } = "";
     public string PersistenceConnectionString { get; set; } = "";
+    public string RabbitMqManagementApiUrl { get; set; } = "";
+    public string RabbitMqManagementApiUser { get; set; } = "";
+    public string RabbitMqManagementApiPassword { get; set; } = "";
 }
-

@@ -16,6 +16,5 @@ public class PocLogEntryRepository : IPocLogEntryRepository
         PocLogEntry pocLogEntry = new(logEntryType, description);
         _pocDbContext.LogEntries.Add(pocLogEntry);
         int actual= await _pocDbContext.SaveChangesAsync();
- 
     }
 }

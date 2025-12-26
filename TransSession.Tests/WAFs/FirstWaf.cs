@@ -1,18 +1,18 @@
 using Shared.Infrastructure.GateManager;
+using Shared.Infrastructure.NServiceBus;
 
 namespace TransSession.Tests.WAFs;
 
 public class FirstWaf : BaseWaf<First.Api.Program>
 {
     public FirstWaf(
-        string rabbitMqConnectionString,
         string msSqlConnectionString,
+        NServiceBusSettings nServiceBusSettings,
         string nginxBaseAddress,
         MultiGateManager multiGateManager)
         : base(
-            rabbitMqConnectionString: rabbitMqConnectionString,
             msSqlConnectionString: msSqlConnectionString,
-            nginxBaseAddress: nginxBaseAddress,
+            nServiceBusSettings: nServiceBusSettings,            nginxBaseAddress: nginxBaseAddress,
             multiGateManager: multiGateManager)
     {
     }
