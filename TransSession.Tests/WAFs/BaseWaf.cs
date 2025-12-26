@@ -4,26 +4,27 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Shared.Infrastructure.GateManager;
+using Shared.Infrastructure.NServiceBus;
 
 namespace TransSession.Tests.WAFs;
 
 public abstract class BaseWaf<T> : WebApplicationFactory<T>
     where T : class
 {
-    private readonly string _rabbitMqConnectionString;
     private readonly string _msSqlConnectionString;
+    private readonly NServiceBusSettings _nServiceBusSettings;
     private readonly string _nginxBaseAddress;
     private readonly MultiGateManager _multiGateManager;
 
     protected BaseWaf(
-        string rabbitMqConnectionString,
         string msSqlConnectionString,
+        NServiceBusSettings nServiceBusSettings,
         string nginxBaseAddress,
         MultiGateManager multiGateManager
     )
     {
-        _rabbitMqConnectionString = rabbitMqConnectionString;
         _msSqlConnectionString = msSqlConnectionString;
+        _nServiceBusSettings = nServiceBusSettings;
         _nginxBaseAddress = nginxBaseAddress;
         _multiGateManager = multiGateManager;
     }
@@ -34,8 +35,11 @@ public abstract class BaseWaf<T> : WebApplicationFactory<T>
         {
             Dictionary<string, string?> keyValuePairs = new()
             {
-                ["NServiceBus:RabbitMqConnectionString"] = _rabbitMqConnectionString,
                 ["NServiceBus:PersistenceConnectionString"] = _msSqlConnectionString,
+                ["NServiceBus:RabbitMqConnectionString"] = _nServiceBusSettings.RabbitMqConnectionString,
+                ["NServiceBus:RabbitMqManagementApiUrl"] = _nServiceBusSettings.RabbitMqManagementApiUrl,
+                ["NServiceBus:RabbitMqManagementApiUser"] = _nServiceBusSettings.RabbitMqManagementApiUser,
+                ["NServiceBus:RabbitMqManagementApiPassword"] = _nServiceBusSettings.RabbitMqManagementApiPassword
             };
             cfg.AddInMemoryCollection(keyValuePairs);
         });
@@ -46,13 +50,13 @@ public abstract class BaseWaf<T> : WebApplicationFactory<T>
     {
         webHostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
         {
-            Dictionary<string, string?> keyValuePairs = new ()
+            Dictionary<string, string?> keyValuePairs = new()
             {
-                ["Nginx:BaseAddress"] = _nginxBaseAddress
+                ["Nginx:BaseAddress"] = _nginxBaseAddress, ["SqlServer:ConnectionString"] = _msSqlConnectionString
             };
             config.AddInMemoryCollection(keyValuePairs);
         });
-        
+
         webHostBuilder.ConfigureServices(services =>
         {
             ServiceDescriptor? existingIGateManagerServiceDescriptor =

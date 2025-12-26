@@ -28,19 +28,16 @@ public static class DatabaseExtensions
                 return pocDbContext;
             }
 
-            NServiceBusSettings settings = webApplicationBuilder.Configuration
-                .GetSection("NServiceBus")
-                .Get<NServiceBusSettings>()!;
+            SqlServerSettings settings = webApplicationBuilder.Configuration.GetSqlServerSettings();
             
             return new PocDbContext(
                 new DbContextOptionsBuilder<PocDbContext>()
-                    .UseSqlServer(settings.PersistenceConnectionString)
+                    .UseSqlServer(settings.ConnectionString)
                     .Options);
         });
 
         return webApplicationBuilder;
     }
-
 
     public static async Task EnsurePocDbCreatedAsync(this WebApplication app)
     {
@@ -55,4 +52,8 @@ public static class DatabaseExtensions
         services.AddScoped<IPocLogEntryRepository, PocLogEntryRepository>();
         return services;
     }
+    
+    public static SqlServerSettings GetSqlServerSettings(this IConfiguration configuration) =>
+        configuration.GetSection(SqlServerSettings.Section).Get<SqlServerSettings>()!;
+
 }

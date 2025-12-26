@@ -8,24 +8,23 @@ namespace Shared.Infrastructure.NServiceBus;
 
 public static class NServiceBusExtensions
 {
-
     public static WebApplicationBuilder SharedConfigureNServiceBus(this WebApplicationBuilder webApplicationBuilder)
     {
         webApplicationBuilder.Host.UseNServiceBus(hostContext =>
         {
-            NServiceBusSettings settings = hostContext.Configuration
-                .GetSection("NServiceBus")
-                .Get<NServiceBusSettings>()!;
+            NServiceBusSettings settings = hostContext.Configuration.GetNServiceBusSettings();
 
-            EndpointConfiguration endpointConfiguration = NServiceBusExtensions.CreateEndpoint(settings);
+            EndpointConfiguration endpointConfiguration = CreateEndpoint(settings);
             return endpointConfiguration;
         });
-        
-        return  webApplicationBuilder;
+
+        return webApplicationBuilder;
     }
 
+    public static NServiceBusSettings GetNServiceBusSettings(this IConfiguration configuration) =>
+        configuration.GetSection(NServiceBusSettings.SectionName).Get<NServiceBusSettings>()!;
 
-    public static EndpointConfiguration CreateEndpoint(NServiceBusSettings nServiceBusSettings)
+    private static EndpointConfiguration CreateEndpoint(NServiceBusSettings nServiceBusSettings)
     {
         EndpointConfiguration endpointConfiguration = new EndpointConfiguration(nServiceBusSettings.EndPointName);
         endpointConfiguration.UseSerialization<SystemJsonSerializer>();
@@ -35,6 +34,12 @@ public static class NServiceBusExtensions
         transport.ConnectionString(nServiceBusSettings.RabbitMqConnectionString);
         transport.UseConventionalRoutingTopology(QueueType.Quorum);
 
+        transport.ManagementApiConfiguration(
+            url: nServiceBusSettings.RabbitMqManagementApiUrl,
+            userName: nServiceBusSettings.RabbitMqManagementApiUser,
+            password: nServiceBusSettings.RabbitMqManagementApiPassword
+            );
+        
         RoutingSettings<RabbitMQTransport> routing = transport.Routing()!;
         routing.RouteToEndpoint(typeof(SecondApiCommand), SecondApiCommand.Endpoint);
 
