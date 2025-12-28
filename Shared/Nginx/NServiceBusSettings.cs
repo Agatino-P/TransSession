@@ -1,4 +1,4 @@
-namespace Shared.Infrastructure.Nginx;
+namespace Shared.Nginx;
 
 public class NginxSettings
 {

@@ -1,4 +1,4 @@
-namespace Shared.Infrastructure.Database;
+namespace Shared.Database;
 
 public class SqlServerSettings
 {

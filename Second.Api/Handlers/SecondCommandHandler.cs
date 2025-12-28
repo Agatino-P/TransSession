@@ -1,6 +1,6 @@
-using Shared.Infrastructure.Contracts.Commands;
-using Shared.Infrastructure.Database.Entities;
-using Shared.Infrastructure.Database.Repository;
+using Shared.Contracts.Commands;
+using Shared.Database.Entities;
+using Shared.Database.Repository;
 
 namespace Second.Api.Handlers;
 

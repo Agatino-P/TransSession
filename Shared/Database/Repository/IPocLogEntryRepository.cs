@@ -1,6 +1,6 @@
-﻿using Shared.Infrastructure.Database.Entities;
+﻿using Shared.Database.Entities;
 
-namespace Shared.Infrastructure.Database.Repository;
+namespace Shared.Database.Repository;
 
 public interface IPocLogEntryRepository
 {

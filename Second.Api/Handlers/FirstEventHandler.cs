@@ -1,14 +1,17 @@
-using Shared.Infrastructure.Contracts.Events;
+using Shared.Contracts.Events;
+using Shared.Database;
 
 namespace Second.Api.Handlers;
 
 public class FirstEventHandler : IHandleMessages<FirstApiEvent>
 {
     private readonly ILogger<FirstEventHandler> _logger;
+    private readonly PocDbContext _dbContext;
 
-    public FirstEventHandler(ILogger<FirstEventHandler> logger)
+    public FirstEventHandler(ILogger<FirstEventHandler> logger, PocDbContext dbContext)
     {
         _logger = logger;
+        _dbContext = dbContext;
     }
     
     public Task Handle(FirstApiEvent firstApiEvent, IMessageHandlerContext context)

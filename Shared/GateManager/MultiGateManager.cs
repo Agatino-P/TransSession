@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Shared.Infrastructure.GateManager;
+namespace Shared.GateManager;
 
 public sealed class MultiGateManager : IGateManager
 {

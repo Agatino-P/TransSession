@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Shared.Infrastructure.Database.Entities;
-using Shared.Infrastructure.Database.Repository;
-using Shared.Infrastructure.GateManager;
+using Shared.Database.Entities;
+using Shared.Database.Repository;
+using Shared.GateManager;
 
 namespace Second.Api.Controllers;
 

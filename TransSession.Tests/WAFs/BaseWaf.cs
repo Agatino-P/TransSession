@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shared.Infrastructure.GateManager;
-using Shared.Infrastructure.NServiceBus;
+using Shared.GateManager;
+using Shared.NServiceBus;
 
 namespace TransSession.Tests.WAFs;
 

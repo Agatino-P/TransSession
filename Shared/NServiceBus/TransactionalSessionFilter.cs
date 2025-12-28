@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NServiceBus.TransactionalSession;
 
-namespace Shared.Infrastructure.NServiceBus;
+namespace Shared.NServiceBus;
 
 public sealed class TransactionalSessionFilter : IAsyncResourceFilter
 {

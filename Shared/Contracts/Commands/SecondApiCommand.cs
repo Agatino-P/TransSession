@@ -1,5 +1,5 @@
 
-namespace Shared.Infrastructure.Contracts.Commands;
+namespace Shared.Contracts.Commands;
 
 public record SecondApiCommand(string Text, int Number)
 {

@@ -1,7 +1,7 @@
-using Shared.Infrastructure.Contracts.Commands;
-using Shared.Infrastructure.Contracts.Events;
+using Shared.Contracts.Commands;
+using Shared.Contracts.Events;
 
-namespace Shared.Infrastructure.Contracts;
+namespace Shared.Contracts;
 
 public static class MessageTypes
 {

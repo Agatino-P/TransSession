@@ -1,4 +1,4 @@
-﻿namespace Shared.Infrastructure.GateManager;
+﻿namespace Shared.GateManager;
 
 public static class TaskCompletionSourceExtensions
 {

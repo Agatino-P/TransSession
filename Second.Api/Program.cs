@@ -1,6 +1,6 @@
-using Shared.Infrastructure.Database;
-using Shared.Infrastructure.GateManager;
-using Shared.Infrastructure.NServiceBus;
+using Shared.Database;
+using Shared.GateManager;
+using Shared.NServiceBus;
 
 namespace Second.Api;
 

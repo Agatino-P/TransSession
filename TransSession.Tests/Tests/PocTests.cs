@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
-using Shared.Infrastructure.Contracts.Dtos;
-using Shared.Infrastructure.Database.Entities;
-using Shared.Infrastructure.GateManager;
+using Shared.Contracts.Dtos;
+using Shared.Database.Entities;
+using Shared.GateManager;
 using Shouldly;
 using Toxiproxy.Net.Toxics;
 using TransSession.Tests.WAFs;

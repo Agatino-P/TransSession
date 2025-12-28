@@ -1,4 +1,4 @@
-﻿namespace Shared.Infrastructure.Database.Entities;
+﻿namespace Shared.Database.Entities;
 
 public enum LogEntryType
 {

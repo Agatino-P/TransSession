@@ -1,7 +1,7 @@
-﻿using Shared.Infrastructure.Database.Entities;
-using Shared.Infrastructure.Database.EntityConfigurations;
+﻿using Shared.Database.Entities;
+using Shared.Database.EntityConfigurations;
 
-namespace Shared.Infrastructure.Database;
+namespace Shared.Database;
 public sealed class PocDbContext : DbContext
 {
     public PocDbContext(DbContextOptions<PocDbContext> options) : base(options) { }

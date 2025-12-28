@@ -1,5 +1,5 @@
-using Shared.Infrastructure.GateManager;
-using Shared.Infrastructure.NServiceBus;
+using Shared.GateManager;
+using Shared.NServiceBus;
 
 namespace TransSession.Tests.WAFs;
 

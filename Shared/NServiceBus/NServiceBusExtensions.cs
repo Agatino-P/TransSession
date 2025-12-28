@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using NServiceBus.TransactionalSession;
-using Shared.Infrastructure.Contracts;
-using Shared.Infrastructure.Contracts.Commands;
+using Shared.Contracts;
+using Shared.Contracts.Commands;
 
-namespace Shared.Infrastructure.NServiceBus;
+namespace Shared.NServiceBus;
 
 public static class NServiceBusExtensions
 {

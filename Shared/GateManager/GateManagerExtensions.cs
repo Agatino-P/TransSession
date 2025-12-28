@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Shared.Infrastructure.GateManager;
+namespace Shared.GateManager;
 
 public static class GateManagerExtensions
 {

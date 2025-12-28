@@ -1,3 +1,3 @@
-namespace Shared.Infrastructure.Contracts.Dtos;
+namespace Shared.Contracts.Dtos;
 
 public record FirstApiPauseDto(string Text);

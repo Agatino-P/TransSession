@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Shared.Infrastructure.Contracts.Commands;
-using Shared.Infrastructure.Contracts.Dtos;
-using Shared.Infrastructure.Database.Entities;
-using Shared.Infrastructure.Database.Repository;
-using Shared.Infrastructure.GateManager;
-using Shared.Infrastructure.Nginx;
+using Shared.Contracts.Commands;
+using Shared.Contracts.Dtos;
+using Shared.Database.Entities;
+using Shared.Database.Repository;
+using Shared.GateManager;
+using Shared.Nginx;
 
 namespace First.Api.Controllers;
 

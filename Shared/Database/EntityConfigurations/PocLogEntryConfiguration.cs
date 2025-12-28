@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Shared.Infrastructure.Database.Entities;
+using Shared.Database.Entities;
 
-namespace Shared.Infrastructure.Database.EntityConfigurations;
+namespace Shared.Database.EntityConfigurations;
 
 public sealed class PocLogEntryConfiguration : IEntityTypeConfiguration<PocLogEntry>
 {

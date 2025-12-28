@@ -3,10 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NServiceBus.Persistence;
 using NServiceBus.Persistence.Sql;
-using Shared.Infrastructure.Database.Repository;
-using Shared.Infrastructure.NServiceBus;
+using Shared.Database.Repository;
 
-namespace Shared.Infrastructure.Database;
+namespace Shared.Database;
 
 public static class DatabaseExtensions
 {

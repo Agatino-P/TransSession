@@ -1,7 +1,6 @@
-﻿using Toxiproxy.Net;
-using Toxiproxy.Net.Toxics;
+﻿using Toxiproxy.Net.Toxics;
 
-namespace Shared.Infrastructure.ToxiProxyTestContainer;
+namespace Shared.ToxiProxyTestContainer;
 
 public sealed class ToxiProxyEndpoint
 {

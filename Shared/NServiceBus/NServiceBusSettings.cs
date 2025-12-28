@@ -1,4 +1,4 @@
-namespace Shared.Infrastructure.NServiceBus;
+namespace Shared.NServiceBus;
 
 public class NServiceBusSettings
 {

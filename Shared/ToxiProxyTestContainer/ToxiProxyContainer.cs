@@ -4,7 +4,7 @@ using Testcontainers.Toxiproxy;
 using Toxiproxy.Net;
 using Toxiproxy.Net.Toxics;
 
-namespace Shared.Infrastructure.ToxiProxyTestContainer;
+namespace Shared.ToxiProxyTestContainer;
 
 public sealed class ToxiProxyContainer : IAsyncDisposable
 {

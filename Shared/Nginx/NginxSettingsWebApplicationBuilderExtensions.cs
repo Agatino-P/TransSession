@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Shared.Infrastructure.Nginx;
+namespace Shared.Nginx;
 
 public static class NginxSettingsWebApplicationBuilderExtensions
 {

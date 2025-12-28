@@ -1,4 +1,4 @@
-﻿namespace Shared.Infrastructure.GateManager;
+﻿namespace Shared.GateManager;
 
 public sealed class NoOpGateManager : IGateManager
 {

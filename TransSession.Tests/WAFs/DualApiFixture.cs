@@ -3,11 +3,11 @@ using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Shared.Infrastructure.Database;
-using Shared.Infrastructure.Database.Repository;
-using Shared.Infrastructure.GateManager;
-using Shared.Infrastructure.NServiceBus;
-using Shared.Infrastructure.ToxiProxyTestContainer;
+using Shared.Database;
+using Shared.Database.Repository;
+using Shared.GateManager;
+using Shared.NServiceBus;
+using Shared.ToxiProxyTestContainer;
 using Testcontainers.RabbitMq;
 using Testcontainers.MsSql;
 
