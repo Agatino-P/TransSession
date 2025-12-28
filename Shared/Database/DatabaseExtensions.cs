@@ -43,6 +43,7 @@ public static class DatabaseExtensions
         using IServiceScope scope = app.Services.CreateScope();
         PocDbContext pocDbContext = scope.ServiceProvider.GetRequiredService<PocDbContext>();
 
+        await pocDbContext.Database.EnsureDeletedAsync();
         await pocDbContext.Database.EnsureCreatedAsync();
     }
 

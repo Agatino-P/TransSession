@@ -12,6 +12,7 @@ public enum LogEntryType
     CommandReceived,
     EventSent,
     EventReceived,
+    EventCompleted,
     AppGateReached,
     EntryAdded,
 }

@@ -35,7 +35,7 @@ public class Program
         app.UseAuthorization();
         app.MapControllers();
 
-        await app.EnsurePocDbCreatedAsync();
+        // await app.EnsurePocDbCreatedAsync();
         await app.RunAsync();
     }
 }

@@ -56,6 +56,10 @@ public static class NServiceBusExtensions
         conventions.DefiningCommandsAs(MessageTypes.IsCommand);
         conventions.DefiningEventsAs(MessageTypes.IsEvent);
 
+        // TODO: Remove this after testing Transactional Session rollback
+        endpointConfiguration.Recoverability().Immediate(c => c.NumberOfRetries(0));
+        endpointConfiguration.Recoverability().Delayed(c => c.NumberOfRetries(0));
+
         return endpointConfiguration;
     }
 }

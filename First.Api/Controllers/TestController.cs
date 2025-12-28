@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Shared.Contracts.Commands;
 using Shared.Contracts.Dtos;
+using Shared.Contracts.Events;
 using Shared.Database.Entities;
 using Shared.Database.Repository;
 using Shared.GateManager;
@@ -34,10 +35,15 @@ public class TestController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Get()
+    public async Task<IActionResult> Get()
     {
         _logger.LogInformation("{Controller}.{Method} was called",
             this.GetType().Name, nameof(Get));
+        
+        await _pocLogEntryRepository.AddEntry(LogEntryType.RestCallReceived, nameof(Get));
+        
+        await _messageSession.Publish(new FirstApiEvent("Hello from TestController", DateTime.UtcNow));
+
         return Ok();
     }
 
